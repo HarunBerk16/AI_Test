@@ -13,6 +13,13 @@ public static class GameData
         set => PlayerPrefs.SetInt("Coins", value);
     }
 
+    // Aktif level (1'den başlar)
+    public static int CurrentLevel
+    {
+        get => PlayerPrefs.GetInt("CurrentLevel", 1);
+        set => PlayerPrefs.SetInt("CurrentLevel", value);
+    }
+
     // Upgrade seviyeleri (0 = başlangıç)
     public static int WarheadLevel
     {

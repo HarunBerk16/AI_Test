@@ -18,14 +18,20 @@ public class PlaneController : MonoBehaviour
     [Header("Sürükleme Hassasiyeti")]
     public float dragSensitivity = 0.3f;
 
+    [Header("Süzülme")]
+    public float glideGravity = 5f;      // Hedefi geçince aşağı çekiş
+    public float glideDeceleration = 3f; // Hedefi geçince yavaşlama
+
     private float _targetPitch;
     private float _targetYaw;
     private Vector2 _lastPointerPos;
     private bool _isTouching;
     private bool _isFlying = true;
+    private bool _isGliding = false;
 
     void Update()
     {
+        if (_isGliding) { Glide(); return; }
         if (!_isFlying) return;
         HandleInput();
         Fly();
@@ -81,6 +87,17 @@ public class PlaneController : MonoBehaviour
         transform.position += transform.forward * speed * Time.deltaTime;
     }
 
+    void Glide()
+    {
+        // Yavaşça ileri ve aşağı git
+        speed = Mathf.Max(0f, speed - glideDeceleration * Time.deltaTime);
+        transform.position += transform.forward * speed * Time.deltaTime;
+        transform.position -= new Vector3(0, glideGravity * Time.deltaTime, 0);
+
+        // Yere değdi mi kontrolü MissionController halleder
+    }
+
     public void SetSpeed(float newSpeed) => speed = newSpeed;
     public void StopFlying() => _isFlying = false;
+    public void StartGliding() { _isFlying = false; _isGliding = true; }
 }

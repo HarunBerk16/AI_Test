@@ -5,7 +5,7 @@ using UnityEngine;
 /// </summary>
 public class GameInitializer : MonoBehaviour
 {
-    void Start()
+    void Start() // PlaneController Start'tan sonra çalışır — sıra önemli değil
     {
         // Uçağı bul
         PlaneController plane = FindObjectOfType<PlaneController>();

@@ -85,13 +85,20 @@
 
         </ui:VisualElement>
 
-        <!-- Play Butonu -->
-        <ui:Button name="PlayButton" text="SALDIRI BAŞLAT" style="
-            font-size: 32px; padding: 18px 60px;
-            background-color: rgb(220,80,40); color: white;
-            border-radius: 16px; border-width: 0;
-            -unity-font-style: bold; margin-top: 20px;
-        "/>
+        <!-- Alt Butonlar -->
+        <ui:VisualElement style="flex-direction: row; margin-top: 20px;">
+            <ui:Button name="PlayButton" text="TEKRAR OYNA" style="
+                font-size: 26px; padding: 16px 40px;
+                background-color: rgb(80,80,100); color: white;
+                border-radius: 16px; border-width: 0;
+                -unity-font-style: bold; margin-right: 16px;
+            "/>
+            <ui:Button name="NextLevelButton" text="SONRAKI LEVEL ►" style="
+                font-size: 26px; padding: 16px 40px;
+                background-color: rgb(220,80,40); color: white;
+                border-radius: 16px; border-width: 0; -unity-font-style: bold;
+            "/>
+        </ui:VisualElement>
 
     </ui:VisualElement>
 </ui:UXML>

@@ -28,10 +28,26 @@ public class UpgradeManager : MonoBehaviour
 
         UpdateCoinLabel();
 
-        // Play butonu
+        // Tekrar oyna (aynı level)
         Button playBtn = _root.Q<Button>("PlayButton");
         if (playBtn != null)
             playBtn.clicked += () => SceneManager.LoadScene("SampleScene");
+
+        // Sonraki level
+        Button nextBtn = _root.Q<Button>("NextLevelButton");
+        if (nextBtn != null)
+        {
+            // Max level 2 ise gizle
+            if (GameData.CurrentLevel >= 2)
+                nextBtn.style.display = UnityEngine.UIElements.DisplayStyle.None;
+            else
+                nextBtn.clicked += () =>
+                {
+                    GameData.CurrentLevel++;
+                    GameData.Save();
+                    SceneManager.LoadScene("SampleScene");
+                };
+        }
     }
 
     void SetupCard(string upgradeType, string cardName)

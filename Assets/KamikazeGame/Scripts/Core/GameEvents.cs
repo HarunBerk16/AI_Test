@@ -13,6 +13,15 @@ public static class GameEvents
     // Uçak hedefe çarptı
     public static Action<UnityEngine.Vector3> OnPlaneImpact;
 
+    // Uçak yere çarptı (coin yok)
+    public static Action OnPlaneCrash;
+
+    // Uçak hedefi geçti (kaçırdı)
+    public static Action OnTargetMissed;
+
     // Upgrade yapıldı
     public static Action OnUpgradePurchased;
+
+    // Pause toggle
+    public static Action<bool> OnPauseChanged;
 }

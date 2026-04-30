@@ -1,9 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Uçak hedefe çarpınca çalışır.
-/// PlaneController'ı durdurur, GameEvents'e bildirir.
-/// </summary>
 [RequireComponent(typeof(PlaneController))]
 public class PlaneImpact : MonoBehaviour
 {
@@ -15,20 +11,36 @@ public class PlaneImpact : MonoBehaviour
         _controller = GetComponent<PlaneController>();
     }
 
-    // Body child'ın trigger'ı buraya iletilir
     public void OnChildTriggerEnter(Collider other)
     {
         if (_hasImpacted) return;
 
-        // Sadece BuildingSection veya TargetBuilding olan objelere çarp
-        if (other.GetComponentInParent<TargetBuilding>() == null) return;
+        // Zemin çarpması: coin yok, crash
+        if (other.gameObject.name == "Ground")
+        {
+            _hasImpacted = true;
+            _controller.StopFlying();
+            GameEvents.OnPlaneCrash?.Invoke();
+            Debug.Log("Yere carpmak: crash!");
+            return;
+        }
 
+        // Bina çarpması: patlama ve coin
+        if (other.GetComponentInParent<TargetBuilding>() != null)
+        {
+            _hasImpacted = true;
+            _controller.StopFlying();
+            GameEvents.OnPlaneImpact?.Invoke(transform.position);
+            Debug.Log($"Bina carpma: {transform.position}");
+        }
+    }
+
+    // Dışarıdan zemin çarpması bildirilebilir (glide sonunda yere inince)
+    public void NotifyGroundCrash()
+    {
+        if (_hasImpacted) return;
         _hasImpacted = true;
         _controller.StopFlying();
-
-        Vector3 impactPoint = transform.position;
-        GameEvents.OnPlaneImpact?.Invoke(impactPoint);
-
-        Debug.Log($"Carpma noktasi: {impactPoint}");
+        GameEvents.OnPlaneCrash?.Invoke();
     }
 }
