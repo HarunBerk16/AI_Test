@@ -1,67 +1,83 @@
 using UnityEngine;
 
 /// <summary>
-/// Görev durumunu yönetir:
-/// - Uçak hedefi geçtiyse → süzülme başlar, kamera durur
-/// - Süzülürken yere değdiyse → crash
+/// Flying fazında aktif olur.
+/// Hedef geçilirse süzülme başlatır, yere değince crash bildirir.
 /// </summary>
 public class MissionController : MonoBehaviour
 {
     [Header("Referanslar")]
     public Transform plane;
-    public CameraFollow cameraFollow;
 
     [Header("Ayarlar")]
-    public float missThreshold = 8f;   // Hedefi kaç metre geçince "kaçırdı"
-    public float groundHeight  = 0.3f; // Bu yüksekliğin altı = yere değdi
+    public float missThreshold = 8f;
+    public float groundHeight  = 0.3f;
 
     private TargetBuilding _target;
     private PlaneController _planeController;
     private PlaneImpact _planeImpact;
-    private bool _missionEnded = false;
+    private bool _missionActive = false;
     private bool _isGliding = false;
 
-    void Start()
+    void Awake()
     {
-        _target          = FindFirstObjectByType<TargetBuilding>();
         _planeController = plane.GetComponent<PlaneController>();
         _planeImpact     = plane.GetComponent<PlaneImpact>();
+    }
 
+    void OnEnable()
+    {
+        GameStateManager.OnPhaseChanged += HandlePhaseChange;
         GameEvents.OnPlaneImpact += OnImpact;
         GameEvents.OnPlaneCrash  += OnCrash;
     }
 
-    void OnDestroy()
+    void OnDisable()
     {
+        GameStateManager.OnPhaseChanged -= HandlePhaseChange;
         GameEvents.OnPlaneImpact -= OnImpact;
         GameEvents.OnPlaneCrash  -= OnCrash;
     }
 
-    void OnImpact(Vector3 _) => _missionEnded = true;
-    void OnCrash()           => _missionEnded = true;
+    void HandlePhaseChange(GamePhase phase)
+    {
+        if (phase == GamePhase.Flying)
+        {
+            _target = null; // Update'te yeniden bulunur (LevelBuilder rebuild'den sonra)
+            _missionActive = true;
+            _isGliding = false;
+        }
+        else
+        {
+            _missionActive = false;
+            _isGliding = false;
+        }
+    }
+
+    void OnImpact(Vector3 _) => _missionActive = false;
+    void OnCrash()           => _missionActive = false;
 
     void Update()
     {
-        if (_missionEnded || plane == null || _target == null) return;
+        if (!_missionActive || plane == null) return;
 
-        // Hedefi geçti mi?
+        if (_target == null)
+        {
+            _target = FindFirstObjectByType<TargetBuilding>();
+            return;
+        }
+
         if (!_isGliding && plane.position.z > _target.transform.position.z + missThreshold)
         {
             _isGliding = true;
             _planeController.StartGliding();
-
-            if (cameraFollow != null) cameraFollow.enabled = false;
-
             GameEvents.OnTargetMissed?.Invoke();
-            Debug.Log("Hedef kacirıldı, suzulme basliyor.");
         }
 
-        // Glide sırasında yere değdi mi?
         if (_isGliding && plane.position.y <= groundHeight)
         {
-            _missionEnded = true;
+            _missionActive = false;
             _planeImpact.NotifyGroundCrash();
-            Debug.Log("Suzulurken yere degdi: crash.");
         }
     }
 }

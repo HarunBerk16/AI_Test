@@ -3,10 +3,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
 /// <summary>
-/// Uçak kontrolü:
-/// - Uçak her zaman ileri gider (transform.forward)
-/// - Parmakla sürükleyince yön değişir (pitch/yaw)
-/// - Parmak kalkınca düz uçar
+/// Menu fazında uçak hareketsiz durur.
+/// Flying fazına geçince başlangıç pozisyonundan uçuşa başlar.
 /// </summary>
 public class PlaneController : MonoBehaviour
 {
@@ -19,15 +17,42 @@ public class PlaneController : MonoBehaviour
     public float dragSensitivity = 0.3f;
 
     [Header("Süzülme")]
-    public float glideGravity = 5f;      // Hedefi geçince aşağı çekiş
-    public float glideDeceleration = 3f; // Hedefi geçince yavaşlama
+    public float glideGravity = 5f;
+    public float glideDeceleration = 3f;
 
     private float _targetPitch;
     private float _targetYaw;
     private Vector2 _lastPointerPos;
     private bool _isTouching;
-    private bool _isFlying = true;
+    private bool _isFlying = false;
     private bool _isGliding = false;
+
+    private Vector3 _startPos;
+    private Quaternion _startRot;
+
+    void Awake()
+    {
+        _startPos = transform.position;
+        _startRot = transform.rotation;
+    }
+
+    void OnEnable()  => GameStateManager.OnPhaseChanged += HandlePhaseChange;
+    void OnDisable() => GameStateManager.OnPhaseChanged -= HandlePhaseChange;
+
+    void HandlePhaseChange(GamePhase phase)
+    {
+        if (phase == GamePhase.Flying || phase == GamePhase.Menu)
+        {
+            transform.position = _startPos;
+            transform.rotation = _startRot;
+            _targetPitch = 0f;
+            _targetYaw   = 0f;
+            _isGliding   = false;
+            speed     = UpgradeData.FuelSpeed(GameData.FuelLevel);
+            turnSpeed = UpgradeData.WingTurnSpeed(GameData.WingLevel);
+        }
+        _isFlying = (phase == GamePhase.Flying);
+    }
 
     void Update()
     {
@@ -45,7 +70,6 @@ public class PlaneController : MonoBehaviour
         if (touch != null && touch.primaryTouch.press.isPressed)
         {
             Vector2 pos = touch.primaryTouch.position.ReadValue();
-
             if (touch.primaryTouch.press.wasPressedThisFrame)
             {
                 _lastPointerPos = pos;
@@ -82,22 +106,18 @@ public class PlaneController : MonoBehaviour
     {
         float pitch = Mathf.Clamp(_targetPitch * turnSpeed, -90f, 90f);
         float yaw   = Mathf.Clamp(_targetYaw   * turnSpeed, -90f, 90f);
-
         transform.Rotate(pitch * Time.deltaTime, yaw * Time.deltaTime, 0f, Space.Self);
         transform.position += transform.forward * speed * Time.deltaTime;
     }
 
     void Glide()
     {
-        // Yavaşça ileri ve aşağı git
         speed = Mathf.Max(0f, speed - glideDeceleration * Time.deltaTime);
         transform.position += transform.forward * speed * Time.deltaTime;
         transform.position -= new Vector3(0, glideGravity * Time.deltaTime, 0);
-
-        // Yere değdi mi kontrolü MissionController halleder
     }
 
     public void SetSpeed(float newSpeed) => speed = newSpeed;
-    public void StopFlying() => _isFlying = false;
+    public void StopFlying()  { _isFlying = false; }
     public void StartGliding() { _isFlying = false; _isGliding = true; }
 }

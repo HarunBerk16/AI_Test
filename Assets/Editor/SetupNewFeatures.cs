@@ -51,14 +51,6 @@ public class SetupNewFeatures
                 GameObject plane = GameObject.Find("Plane");
                 if (plane != null) mc.plane = plane.transform;
 
-                // CameraFollow referansı
-                var cam = Camera.main;
-                if (cam != null)
-                {
-                    var cf = cam.GetComponent<CameraFollow>();
-                    if (cf != null) mc.cameraFollow = cf;
-                }
-
                 Debug.Log("MissionController eklendi.");
             }
         }

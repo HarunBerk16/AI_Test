@@ -17,7 +17,7 @@ public static class UpgradeData
 
     // Warhead: patlama yarıçapı
     public static int WarheadCost(int level)  => GetCost(level, baseCost: 50);
-    public static float WarheadRadius(int level) => 3f + level * 2f;
+    public static float WarheadRadius(int level) => 2.5f + level * 2f;
 
     // Yakıt: hız
     public static int FuelCost(int level)     => GetCost(level, baseCost: 40);
