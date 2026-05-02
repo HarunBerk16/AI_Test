@@ -1,175 +1,172 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <ui:VisualElement name="Root" style="width: 100%; height: 100%;">
 
-        <!-- Üst Bar: her fazda görünür -->
+        <!-- Üst Bar: Menu fazında görünür -->
         <ui:VisualElement name="TopBar" style="
-            flex-direction: row;
-            justify-content: space-between;
-            padding: 20px;
+            flex-direction: row; justify-content: space-between; align-items: center;
+            padding: 14px 16px;
+            background-color: rgba(0,0,0,0.45);
         ">
             <ui:Label name="LevelLabel" text="LEVEL 1" style="
-                font-size: 24px; color: rgb(255,200,50); -unity-font-style: bold;
-                background-color: rgba(0,0,0,0.55);
-                padding: 8px 16px; border-radius: 12px;
+                font-size: 22px; color: rgb(255,200,50); -unity-font-style: bold;
+                background-color: rgba(255,160,0,0.15);
+                border-color: rgba(255,200,50,0.5); border-width: 1px;
+                padding: 8px 20px; border-radius: 20px;
             "/>
             <ui:Label name="CoinLabel" text="Coin: 0" style="
-                font-size: 24px; color: white; -unity-font-style: bold;
-                background-color: rgba(0,0,0,0.55);
-                padding: 8px 16px; border-radius: 12px;
+                font-size: 22px; color: rgb(255,230,80); -unity-font-style: bold;
+                background-color: rgba(255,200,0,0.12);
+                border-color: rgba(255,220,50,0.5); border-width: 1px;
+                padding: 8px 20px; border-radius: 20px;
             "/>
         </ui:VisualElement>
 
-        <!-- Orta boşluk (3D dünya görünür) -->
-        <ui:VisualElement style="flex-grow: 1; -unity-overflow-clip-box: padding-box;" picking-mode="Ignore"/>
-
-        <!-- Menü Paneli: upgrade kartları + başlat butonu (sadece Menu fazında) -->
-        <ui:VisualElement name="MenuPanel" style="
-            background-color: rgba(0,0,0,0.65);
-            padding: 16px 20px; align-items: center;
+        <!-- Orta: 3D sahne + menüde "dokun" etiketi -->
+        <ui:VisualElement name="TapArea" style="
+            flex-grow: 1; align-items: center; justify-content: flex-end;
+            padding-bottom: 20px;
         ">
-            <!-- Upgrade Kart Satırı -->
-            <ui:VisualElement style="flex-direction: row; justify-content: center; margin-bottom: 14px;">
+            <ui:Label name="TapToStartLabel" text="BASLAMAK ICIN EKRANA DOKUN" style="
+                font-size: 19px; color: rgba(255,255,255,0.70); -unity-font-style: bold;
+                letter-spacing: 2px; display: none;
+                background-color: rgba(0,0,0,0.35);
+                padding: 12px 28px; border-radius: 22px;
+            "/>
+        </ui:VisualElement>
 
-                <!-- Warhead -->
+        <!-- Menü Paneli (upgrade kartları) -->
+        <ui:VisualElement name="MenuPanel" style="
+            background-color: rgba(10,10,20,0.90);
+            border-color: rgba(255,255,255,0.08); border-top-width: 1px;
+            padding: 12px 10px 18px;
+        ">
+            <ui:Label text="UPGRADES" style="
+                font-size: 14px; color: rgba(160,160,190,0.7); -unity-font-style: bold;
+                -unity-text-align: upper-center;
+                margin-bottom: 8px; letter-spacing: 2px;
+            "/>
+
+            <ui:VisualElement style="flex-direction: row; justify-content: space-between; margin-bottom: 0;">
+
+                <!-- WARHEAD -->
                 <ui:VisualElement name="WarheadCard" style="
-                    background-color: rgba(200,50,50,0.25);
-                    border-color: rgb(200,50,50); border-width: 2px;
-                    border-radius: 14px; padding: 14px; margin: 6px;
-                    align-items: center; width: 185px;
+                    flex: 1; margin: 0 4px;
+                    background-color: rgba(180,30,30,0.20);
+                    border-color: rgba(220,60,60,0.65); border-width: 1px;
+                    border-radius: 14px; padding: 10px 6px 10px;
+                    align-items: center;
                 ">
-                    <ui:Label text="WARHEAD" style="font-size: 19px; color: rgb(255,110,110); -unity-font-style: bold; margin-bottom: 5px;"/>
-                    <ui:Label name="LevelLabel" text="Seviye 0" style="font-size: 15px; color: white; margin-bottom: 4px;"/>
-                    <ui:Label name="StatLabel" text="" style="font-size: 13px; color: rgb(200,200,200); margin-bottom: 10px; white-space: normal; -unity-text-align: upper-center;"/>
-                    <ui:Label name="CostLabel" text="" style="font-size: 17px; color: rgb(255,220,50); margin-bottom: 8px;"/>
-                    <ui:Button name="BuyButton" text="UPGRADE" style="
-                        font-size: 15px; padding: 7px 18px;
-                        background-color: rgb(200,50,50); color: white;
-                        border-radius: 8px; border-width: 0; -unity-font-style: bold;
-                    "/>
+                    <ui:Label text="&#x1F4A3;" style="font-size: 30px; margin-bottom: 3px;"/>
+                    <ui:Label text="WARHEAD" style="font-size: 14px; color: rgb(255,120,120); -unity-font-style: bold; margin-bottom: 2px; -unity-text-align: upper-center;"/>
+                    <ui:Label name="LevelLabel" text="Seviye 0" style="font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 3px;"/>
+                    <ui:Label name="StatLabel" text="" style="font-size: 11px; color: rgba(200,200,220,0.65); margin-bottom: 4px; white-space: normal; -unity-text-align: upper-center; flex-grow: 1;"/>
+                    <ui:Label name="CostLabel" text="" style="font-size: 15px; color: rgb(255,220,50); -unity-font-style: bold; margin-bottom: 0;"/>
+                    <ui:VisualElement name="BuyButtonVis" style="
+                        width: 100%; height: 44px; margin-top: 7px;
+                        background-color: rgb(200,40,40);
+                        border-radius: 10px; align-items: center; justify-content: center;
+                    ">
+                        <ui:Label name="BuyButtonLabel" text="UPGRADE" style="font-size: 15px; color: white; -unity-font-style: bold;"/>
+                    </ui:VisualElement>
                 </ui:VisualElement>
 
-                <!-- Yakıt -->
+                <!-- YAKIT -->
                 <ui:VisualElement name="FuelCard" style="
-                    background-color: rgba(50,150,200,0.25);
-                    border-color: rgb(50,150,200); border-width: 2px;
-                    border-radius: 14px; padding: 14px; margin: 6px;
-                    align-items: center; width: 185px;
+                    flex: 1; margin: 0 4px;
+                    background-color: rgba(30,100,180,0.20);
+                    border-color: rgba(60,150,220,0.65); border-width: 1px;
+                    border-radius: 14px; padding: 10px 6px 10px;
+                    align-items: center;
                 ">
-                    <ui:Label text="YAKIT" style="font-size: 19px; color: rgb(100,180,255); -unity-font-style: bold; margin-bottom: 5px;"/>
-                    <ui:Label name="LevelLabel" text="Seviye 0" style="font-size: 15px; color: white; margin-bottom: 4px;"/>
-                    <ui:Label name="StatLabel" text="" style="font-size: 13px; color: rgb(200,200,200); margin-bottom: 10px; white-space: normal; -unity-text-align: upper-center;"/>
-                    <ui:Label name="CostLabel" text="" style="font-size: 17px; color: rgb(255,220,50); margin-bottom: 8px;"/>
-                    <ui:Button name="BuyButton" text="UPGRADE" style="
-                        font-size: 15px; padding: 7px 18px;
-                        background-color: rgb(50,150,200); color: white;
-                        border-radius: 8px; border-width: 0; -unity-font-style: bold;
-                    "/>
+                    <ui:Label text="&#x26A1;" style="font-size: 30px; margin-bottom: 3px;"/>
+                    <ui:Label text="YAKIT" style="font-size: 14px; color: rgb(100,180,255); -unity-font-style: bold; margin-bottom: 2px; -unity-text-align: upper-center;"/>
+                    <ui:Label name="LevelLabel" text="Seviye 0" style="font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 3px;"/>
+                    <ui:Label name="StatLabel" text="" style="font-size: 11px; color: rgba(200,200,220,0.65); margin-bottom: 4px; white-space: normal; -unity-text-align: upper-center; flex-grow: 1;"/>
+                    <ui:Label name="CostLabel" text="" style="font-size: 15px; color: rgb(255,220,50); -unity-font-style: bold; margin-bottom: 0;"/>
+                    <ui:VisualElement name="BuyButtonVis" style="
+                        width: 100%; height: 44px; margin-top: 7px;
+                        background-color: rgb(30,120,200);
+                        border-radius: 10px; align-items: center; justify-content: center;
+                    ">
+                        <ui:Label name="BuyButtonLabel" text="UPGRADE" style="font-size: 15px; color: white; -unity-font-style: bold;"/>
+                    </ui:VisualElement>
                 </ui:VisualElement>
 
-                <!-- Kanat -->
+                <!-- KANAT -->
                 <ui:VisualElement name="WingCard" style="
-                    background-color: rgba(50,200,100,0.25);
-                    border-color: rgb(50,200,100); border-width: 2px;
-                    border-radius: 14px; padding: 14px; margin: 6px;
-                    align-items: center; width: 185px;
+                    flex: 1; margin: 0 4px;
+                    background-color: rgba(30,160,80,0.20);
+                    border-color: rgba(50,200,100,0.65); border-width: 1px;
+                    border-radius: 14px; padding: 10px 6px 10px;
+                    align-items: center;
                 ">
-                    <ui:Label text="KANAT" style="font-size: 19px; color: rgb(100,255,150); -unity-font-style: bold; margin-bottom: 5px;"/>
-                    <ui:Label name="LevelLabel" text="Seviye 0" style="font-size: 15px; color: white; margin-bottom: 4px;"/>
-                    <ui:Label name="StatLabel" text="" style="font-size: 13px; color: rgb(200,200,200); margin-bottom: 10px; white-space: normal; -unity-text-align: upper-center;"/>
-                    <ui:Label name="CostLabel" text="" style="font-size: 17px; color: rgb(255,220,50); margin-bottom: 8px;"/>
-                    <ui:Button name="BuyButton" text="UPGRADE" style="
-                        font-size: 15px; padding: 7px 18px;
-                        background-color: rgb(50,200,100); color: white;
-                        border-radius: 8px; border-width: 0; -unity-font-style: bold;
-                    "/>
+                    <ui:Label text="&#x2708;" style="font-size: 30px; margin-bottom: 3px;"/>
+                    <ui:Label text="KANAT" style="font-size: 14px; color: rgb(80,230,130); -unity-font-style: bold; margin-bottom: 2px; -unity-text-align: upper-center;"/>
+                    <ui:Label name="LevelLabel" text="Seviye 0" style="font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 3px;"/>
+                    <ui:Label name="StatLabel" text="" style="font-size: 11px; color: rgba(200,200,220,0.65); margin-bottom: 4px; white-space: normal; -unity-text-align: upper-center; flex-grow: 1;"/>
+                    <ui:Label name="CostLabel" text="" style="font-size: 15px; color: rgb(255,220,50); -unity-font-style: bold; margin-bottom: 0;"/>
+                    <ui:VisualElement name="BuyButtonVis" style="
+                        width: 100%; height: 44px; margin-top: 7px;
+                        background-color: rgb(30,160,70);
+                        border-radius: 10px; align-items: center; justify-content: center;
+                    ">
+                        <ui:Label name="BuyButtonLabel" text="UPGRADE" style="font-size: 15px; color: white; -unity-font-style: bold;"/>
+                    </ui:VisualElement>
                 </ui:VisualElement>
 
-            </ui:VisualElement>
-
-            <!-- Buton Satırı -->
-            <ui:VisualElement style="flex-direction: row;">
-                <ui:Button name="StartButton" text="SALDIRI BAŞLAT" style="
-                    font-size: 26px; padding: 14px 50px;
-                    background-color: rgb(220,60,30); color: white;
-                    border-radius: 14px; border-width: 0;
-                    -unity-font-style: bold; margin-right: 14px;
-                "/>
-                <ui:Button name="NextLevelButton" text="SONRAKI LEVEL ►" style="
-                    font-size: 20px; padding: 14px 28px;
-                    background-color: rgb(40,100,180); color: white;
-                    border-radius: 14px; border-width: 0; -unity-font-style: bold;
-                "/>
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Pause Butonu: sadece Flying fazında, sağ üst köşe -->
-        <ui:Button name="PauseButton" text="II" style="
-            position: absolute; top: 20px; right: 20px;
-            font-size: 20px; color: white; -unity-font-style: bold;
-            background-color: rgba(0,0,0,0.55);
-            padding: 8px 14px; border-radius: 10px;
-            border-width: 0; width: 48px;
+        <!-- Mesafe Etiketi -->
+        <ui:Label name="DistanceLabel" text="Hedefe: ---m" style="
+            position: absolute; top: 18px; left: 0; right: 0;
+            -unity-text-align: upper-center;
+            font-size: 28px; color: white; -unity-font-style: bold;
+            display: none;
         "/>
 
-        <!-- Sonuç Paneli: ortada overlay (başta gizli) -->
+        <!-- Pause Butonu -->
+        <ui:Button name="PauseButton" text="II" style="
+            position: absolute; top: 14px; right: 14px;
+            font-size: 20px; color: white; -unity-font-style: bold;
+            background-color: rgba(0,0,0,0.60);
+            border-color: rgba(255,255,255,0.2); border-width: 1px;
+            width: 60px; height: 60px; border-radius: 30px;
+        "/>
+
+        <!-- Sonuç Paneli -->
         <ui:VisualElement name="ResultPanel" style="
             position: absolute; left: 0; top: 0; right: 0; bottom: 0;
-            align-items: center; justify-content: center;
-            background-color: rgba(0,0,0,0.72);
+            align-items: center; justify-content: flex-end;
+            display: none;
         ">
             <ui:VisualElement style="
-                background-color: rgba(15,15,25,0.96);
-                border-radius: 22px; padding: 40px 50px;
+                width: 100%; padding: 28px 28px 44px;
+                background-color: rgba(8,8,18,0.94);
+                border-color: rgba(255,255,255,0.08); border-top-width: 1px;
                 align-items: center;
-                border-color: rgba(255,255,255,0.08); border-width: 1px;
             ">
-                <ui:Label name="ResultTitle" text="GÖREV TAMAMLANDI" style="
-                    font-size: 30px; color: rgb(255,200,50);
-                    -unity-font-style: bold; margin-bottom: 12px;
-                "/>
-                <ui:Label name="ResultPercent" text="Yıkım: %0" style="
-                    font-size: 52px; color: white;
-                    -unity-font-style: bold; margin-bottom: 8px;
-                "/>
-                <ui:Label name="ResultCoin" text="+0 Coin" style="
-                    font-size: 28px; color: rgb(100,255,100); margin-bottom: 26px;
-                "/>
-                <ui:VisualElement style="flex-direction: row;">
-                    <ui:Button name="RetryButton" text="TEKRAR OYNA" style="
-                        font-size: 22px; padding: 13px 34px;
-                        background-color: rgb(70,70,90); color: white;
-                        border-radius: 12px; border-width: 0;
-                        -unity-font-style: bold; margin-right: 12px;
-                    "/>
-                    <ui:Button name="BackMenuButton" text="UPGRADE / MENÜ" style="
-                        font-size: 22px; padding: 13px 34px;
-                        background-color: rgb(220,80,40); color: white;
-                        border-radius: 12px; border-width: 0; -unity-font-style: bold;
-                    "/>
+                <ui:Label name="ResultTitle" text="GOREV TAMAMLANDI" style="font-size: 22px; color: rgb(255,200,50); -unity-font-style: bold; letter-spacing: 1px; margin-bottom: 12px;"/>
+                <ui:Label name="ResultPercent" text="%0" style="font-size: 72px; color: white; -unity-font-style: bold; margin-bottom: 16px;"/>
+                <ui:VisualElement style="width: 100%; height: 26px; background-color: rgba(255,255,255,0.10); border-radius: 13px; overflow: hidden; margin-bottom: 20px;">
+                    <ui:VisualElement name="ResultBarFill" style="height: 100%; width: 0%; background-color: rgb(255,80,30); border-radius: 13px;">
+                        <ui:VisualElement style="position: absolute; top: 4px; left: 6px; right: 6px; height: 6px; background-color: rgba(255,255,255,0.22); border-radius: 3px;"/>
+                    </ui:VisualElement>
                 </ui:VisualElement>
+                <ui:Label name="ResultCoin" text="+0 Coin" style="font-size: 30px; color: rgb(100,255,140); -unity-font-style: bold; margin-bottom: 24px;"/>
+                <ui:Label name="TapLabel" text="DEVAM ETMEK ICIN DOKUN" style="font-size: 17px; color: rgba(255,255,255,0.40); -unity-font-style: bold; display: none; letter-spacing: 1px;"/>
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Pause Paneli: tam ekran overlay (başta gizli) -->
+        <!-- Pause Paneli -->
         <ui:VisualElement name="PausePanel" style="
             position: absolute; left: 0; top: 0; right: 0; bottom: 0;
             align-items: center; justify-content: center;
-            background-color: rgba(0,0,0,0.82);
+            background-color: rgba(5,5,15,0.90); display: none;
         ">
-            <ui:Label text="DURAKLANDI" style="
-                font-size: 48px; color: white; -unity-font-style: bold; margin-bottom: 30px;
-            "/>
-            <ui:Button name="ResumeButton" text="DEVAM ET" style="
-                font-size: 26px; padding: 14px 50px;
-                background-color: rgb(50,180,80); color: white;
-                border-radius: 12px; border-width: 0;
-                -unity-font-style: bold; margin-bottom: 16px;
-            "/>
-            <ui:Button name="PauseMenuButton" text="UPGRADE / MENÜ" style="
-                font-size: 22px; padding: 12px 50px;
-                background-color: rgb(60,60,80); color: white;
-                border-radius: 12px; border-width: 0; -unity-font-style: bold;
-            "/>
+            <ui:Label text="DURAKLANDI" style="font-size: 38px; color: white; -unity-font-style: bold; margin-bottom: 36px; letter-spacing: 2px;"/>
+            <ui:Button name="ResumeButton" text="DEVAM ET" style="font-size: 24px; -unity-font-style: bold; width: 75%; height: 70px; background-color: rgb(40,170,70); color: white; border-radius: 14px; border-width: 0; margin-bottom: 14px;"/>
+            <ui:Button name="PauseMenuButton" text="UPGRADE / MENU" style="font-size: 21px; -unity-font-style: bold; width: 75%; height: 62px; background-color: rgba(80,80,110,0.85); color: rgba(255,255,255,0.85); border-radius: 14px; border-width: 0;"/>
         </ui:VisualElement>
 
     </ui:VisualElement>

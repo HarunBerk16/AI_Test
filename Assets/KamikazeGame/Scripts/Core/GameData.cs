@@ -39,6 +39,7 @@ public static class GameData
     // Başlangıçta 2.5m yarıçap → 7 katlı binada kısmi hasar mümkün.
     // Max (level 5): 12.5m → tüm binayı kapsar.
     public static float ExplosionRadius => 2.5f + WarheadLevel * 2f;
+    public static float BlastForce      => 50f  + WarheadLevel * 80f;
     public static float PlaneSpeed      => 20f  + FuelLevel    * 5f;
     public static float WingScale       => 1f   + WingLevel    * 0.3f;
 

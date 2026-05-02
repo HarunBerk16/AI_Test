@@ -1,9 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Binanın tek bir bölümü (kat, kule vs.).
-/// Yıkılınca görsel olarak çöker.
-/// </summary>
 public class BuildingSection : MonoBehaviour
 {
     public bool IsDestroyed { get; private set; }
@@ -17,39 +13,49 @@ public class BuildingSection : MonoBehaviour
         _collider = GetComponent<Collider>();
     }
 
-    public void Destroy()
+    // Doğrudan patlama yarıçapında: güçlü itme + koyu hasar rengi
+    public void Destroy(Vector3 explosionCenter, float blastForce)
     {
         if (IsDestroyed) return;
-        IsDestroyed = true;
+        MarkDestroyed(new Color(0.18f, 0.09f, 0.04f));
 
-        // Görsel: rengi koyulaştır (yıkık efekti)
-        if (_renderer != null)
+        var rb = GetComponent<Rigidbody>();
+        if (rb != null)
         {
-            MaterialPropertyBlock block = new MaterialPropertyBlock();
-            _renderer.GetPropertyBlock(block);
-            block.SetColor("_BaseColor", new Color(0.2f, 0.1f, 0.05f));
-            _renderer.SetPropertyBlock(block);
+            rb.isKinematic = false;
+            rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+            rb.AddExplosionForce(blastForce, explosionCenter, 15f, 1.5f, ForceMode.Impulse);
         }
 
-        // Hafif aşağı düşür
-        StartCoroutine(CollapseRoutine());
+        Invoke(nameof(DisableCollider), 4f);
     }
 
-    System.Collections.IEnumerator CollapseRoutine()
+    // Dalga kuvveti: daha zayıf itme, hafif hasar rengi + yıkılmış sayılır
+    public void ApplyForce(Vector3 explosionCenter, float blastForce)
     {
-        float elapsed = 0f;
-        float duration = 0.5f;
-        Vector3 startPos = transform.position;
-        Vector3 endPos = startPos - new Vector3(0, transform.localScale.y * 0.5f, 0);
+        if (IsDestroyed) return;
+        MarkDestroyed(new Color(0.28f, 0.16f, 0.08f));
 
-        while (elapsed < duration)
+        var rb = GetComponent<Rigidbody>();
+        if (rb != null)
         {
-            elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-            transform.position = Vector3.Lerp(startPos, endPos, t);
-            yield return null;
+            rb.isKinematic = false;
+            rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+            rb.AddExplosionForce(blastForce, explosionCenter, 15f, 0.5f, ForceMode.Impulse);
         }
 
+        Invoke(nameof(DisableCollider), 5f);
+    }
+
+    void MarkDestroyed(Color damagedColor)
+    {
+        IsDestroyed = true;
+        if (_renderer != null)
+            _renderer.material.color = damagedColor;
+    }
+
+    void DisableCollider()
+    {
         if (_collider != null) _collider.enabled = false;
     }
 }

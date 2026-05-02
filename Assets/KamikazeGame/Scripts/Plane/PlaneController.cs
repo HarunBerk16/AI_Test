@@ -1,33 +1,28 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
 
-/// <summary>
-/// Menu fazında uçak hareketsiz durur.
-/// Flying fazına geçince başlangıç pozisyonundan uçuşa başlar.
-/// </summary>
 public class PlaneController : MonoBehaviour
 {
     [Header("Hareket")]
-    public float speed = 20f;
-    public float turnSpeed = 80f;
-    public float stabilizeSpeed = 3f;
+    public float speed      = 20f;
+    public float turnSpeed  = 80f;
+    public float stabilizeSpeed = 4f;
 
-    [Header("Sürükleme Hassasiyeti")]
-    public float dragSensitivity = 0.3f;
+    [Header("Joystick")]
+    public float joystickRadius = 320f; // ekran pikseli cinsinden yarıçap
 
     [Header("Süzülme")]
-    public float glideGravity = 5f;
+    public float glideGravity     = 5f;
     public float glideDeceleration = 3f;
 
-    private float _targetPitch;
-    private float _targetYaw;
-    private Vector2 _lastPointerPos;
-    private bool _isTouching;
-    private bool _isFlying = false;
-    private bool _isGliding = false;
+    private float   _targetPitch;
+    private float   _targetYaw;
+    private Vector2 _touchStartPos;
+    private bool    _isTouching;
+    private bool    _isFlying;
+    private bool    _isGliding;
 
-    private Vector3 _startPos;
+    private Vector3    _startPos;
     private Quaternion _startRot;
 
     void Awake()
@@ -43,6 +38,15 @@ public class PlaneController : MonoBehaviour
     {
         if (phase == GamePhase.Flying || phase == GamePhase.Menu)
         {
+            // Rigidbody varsa kinematik yap — BreakApart sonrası fizik çakışmasını önler
+            var rb = GetComponent<Rigidbody>();
+            if (rb != null && !rb.isKinematic)
+            {
+                rb.linearVelocity  = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.isKinematic     = true;
+            }
+
             transform.position = _startPos;
             transform.rotation = _startRot;
             _targetPitch = 0f;
@@ -57,7 +61,7 @@ public class PlaneController : MonoBehaviour
     void Update()
     {
         if (_isGliding) { Glide(); return; }
-        if (!_isFlying) return;
+        if (!_isFlying)  return;
         HandleInput();
         Fly();
     }
@@ -65,47 +69,54 @@ public class PlaneController : MonoBehaviour
     void HandleInput()
     {
         Touchscreen touch = Touchscreen.current;
-        Mouse mouse = Mouse.current;
+        Mouse        mouse = Mouse.current;
 
         if (touch != null && touch.primaryTouch.press.isPressed)
         {
             Vector2 pos = touch.primaryTouch.position.ReadValue();
+
             if (touch.primaryTouch.press.wasPressedThisFrame)
             {
-                _lastPointerPos = pos;
-                _isTouching = true;
+                _touchStartPos = pos;
+                _isTouching    = true;
             }
-            else if (_isTouching)
-            {
-                Vector2 delta = pos - _lastPointerPos;
-                _targetYaw   =  delta.x * dragSensitivity;
-                _targetPitch = -delta.y * dragSensitivity;
-                _lastPointerPos = pos;
-            }
+
+            if (_isTouching)
+                ApplyJoystick(pos - _touchStartPos);
         }
         else if (mouse != null && mouse.leftButton.isPressed)
         {
-            Vector2 delta = mouse.delta.ReadValue();
-            _targetYaw   =  delta.x * dragSensitivity * 2f;
-            _targetPitch = -delta.y * dragSensitivity * 2f;
-            _isTouching = true;
+            Vector2 pos = mouse.position.ReadValue();
+
+            if (mouse.leftButton.wasPressedThisFrame)
+            {
+                _touchStartPos = pos;
+                _isTouching    = true;
+            }
+
+            if (_isTouching)
+                ApplyJoystick(pos - _touchStartPos);
         }
         else
         {
-            _isTouching = false;
-        }
-
-        if (!_isTouching)
-        {
+            _isTouching  = false;
             _targetPitch = Mathf.Lerp(_targetPitch, 0f, Time.deltaTime * stabilizeSpeed);
             _targetYaw   = Mathf.Lerp(_targetYaw,   0f, Time.deltaTime * stabilizeSpeed);
         }
     }
 
+    void ApplyJoystick(Vector2 offset)
+    {
+        // Yarıçap dışına taşmayı engelle, normalize et (-1..+1)
+        Vector2 clamped = Vector2.ClampMagnitude(offset, joystickRadius);
+        _targetYaw   =  clamped.x / joystickRadius;
+        _targetPitch = -clamped.y / joystickRadius;
+    }
+
     void Fly()
     {
-        float pitch = Mathf.Clamp(_targetPitch * turnSpeed, -90f, 90f);
-        float yaw   = Mathf.Clamp(_targetYaw   * turnSpeed, -90f, 90f);
+        float pitch = _targetPitch * turnSpeed;
+        float yaw   = _targetYaw   * turnSpeed;
         transform.Rotate(pitch * Time.deltaTime, yaw * Time.deltaTime, 0f, Space.Self);
         transform.position += transform.forward * speed * Time.deltaTime;
     }
@@ -117,7 +128,7 @@ public class PlaneController : MonoBehaviour
         transform.position -= new Vector3(0, glideGravity * Time.deltaTime, 0);
     }
 
-    public void SetSpeed(float newSpeed) => speed = newSpeed;
-    public void StopFlying()  { _isFlying = false; }
-    public void StartGliding() { _isFlying = false; _isGliding = true; }
+    public void SetSpeed(float s)  => speed = s;
+    public void StopFlying()       => _isFlying = false;
+    public void StartGliding()     { _isFlying = false; _isGliding = true; }
 }
