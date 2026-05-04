@@ -24,8 +24,8 @@ public class GameHUD : MonoBehaviour
     private Button        _pauseMenuButton;
 
     private UpgradeCardUI _warheadCard;
-    private UpgradeCardUI _fuelCard;
-    private UpgradeCardUI _wingCard;
+    private UpgradeCardUI _hullCard;
+    private UpgradeCardUI _stabilityCard;
 
     private bool      _isPaused;
     private bool      _resultShown;
@@ -74,23 +74,19 @@ public class GameHUD : MonoBehaviour
         _resumeButton    = root.Q<Button>("ResumeButton");
         _pauseMenuButton = root.Q<Button>("PauseMenuButton");
 
-        // Tap area = başlamak için ekrana dokun
         _tapArea?.RegisterCallback<ClickEvent>(_ =>
         {
             if (GameStateManager.Instance?.CurrentPhase == GamePhase.Menu)
                 GameStateManager.Instance?.StartGame();
         });
 
-        // Upgrade kartları: tüm kart tıklanabilir, kendi click'ini yukarı taşımaz
-        _warheadCard = new UpgradeCardUI(root.Q<VisualElement>("WarheadCard"), "Warhead", OnBuyWarhead);
-        _fuelCard    = new UpgradeCardUI(root.Q<VisualElement>("FuelCard"),    "Fuel",    OnBuyFuel);
-        _wingCard    = new UpgradeCardUI(root.Q<VisualElement>("WingCard"),    "Wing",    OnBuyWing);
+        _warheadCard   = new UpgradeCardUI(root.Q<VisualElement>("WarheadCard"), "Warhead",   OnBuyWarhead);
+        _hullCard      = new UpgradeCardUI(root.Q<VisualElement>("FuelCard"),    "Hull",      OnBuyHull);
+        _stabilityCard = new UpgradeCardUI(root.Q<VisualElement>("WingCard"),    "Stability", OnBuyStability);
 
         _resultPanel?.RegisterCallback<ClickEvent>(_ => TryReturnToMenu());
-
         _pauseButton?.RegisterCallback<ClickEvent>(_ => TogglePause());
         _resumeButton?.RegisterCallback<ClickEvent>(_ => TogglePause());
-
         _pauseMenuButton?.RegisterCallback<ClickEvent>(_ =>
         {
             ResumeGame();
@@ -188,9 +184,7 @@ public class GameHUD : MonoBehaviour
         if (_resultShown) return;
         _resultShown        = true;
         _shouldAdvanceLevel = (percent >= 1f);
-
         GameStateManager.Instance?.EndMission();
-
         string title = percent >= 1f ? "MUKEMMEL! %100 YIKIM!"
                      : percent > 0f  ? "GOREV TAMAMLANDI"
                      : "HASAR YOK";
@@ -236,14 +230,14 @@ public class GameHUD : MonoBehaviour
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float t       = Mathf.Clamp01(elapsed / duration);
-            float eased   = 1f - Mathf.Pow(1f - t, 3f);
-            float current = eased * percent;
+            float t     = Mathf.Clamp01(elapsed / duration);
+            float eased = 1f - Mathf.Pow(1f - t, 3f);
+            float cur   = eased * percent;
 
             if (_resultBarFill != null)
-                _resultBarFill.style.width = new StyleLength(new Length(current * 100f, LengthUnit.Percent));
+                _resultBarFill.style.width = new StyleLength(new Length(cur * 100f, LengthUnit.Percent));
             if (_resultPercent != null)
-                _resultPercent.text = $"%{current * 100f:F0}";
+                _resultPercent.text = $"%{cur * 100f:F0}";
 
             yield return null;
         }
@@ -303,27 +297,41 @@ public class GameHUD : MonoBehaviour
     void OnBuyWarhead()
     {
         int lvl  = GameData.WarheadLevel;
+        int cap  = GameData.MaxWarheadForHull;
         int cost = UpgradeData.WarheadCost(lvl);
-        if (lvl < UpgradeData.MaxLevel && GameData.Coins >= cost)
-            { GameData.Coins -= cost; GameData.WarheadLevel++; GameData.Save(); }
+        if (lvl < cap && lvl < UpgradeData.MaxWarheadLevel && GameData.Coins >= cost)
+        {
+            GameData.Coins -= cost;
+            GameData.WarheadLevel++;
+            GameData.Save();
+        }
         RefreshCards();
     }
 
-    void OnBuyFuel()
+    void OnBuyHull()
     {
-        int lvl  = GameData.FuelLevel;
-        int cost = UpgradeData.FuelCost(lvl);
-        if (lvl < UpgradeData.MaxLevel && GameData.Coins >= cost)
-            { GameData.Coins -= cost; GameData.FuelLevel++; GameData.Save(); }
+        int lvl  = GameData.HullLevel;
+        int cost = UpgradeData.HullCost(lvl);
+        if (lvl < UpgradeData.MaxHullLevel && GameData.Coins >= cost)
+        {
+            GameData.Coins -= cost;
+            GameData.HullLevel++;
+            GameData.Save();
+            GameEvents.OnUpgradePurchased?.Invoke();
+        }
         RefreshCards();
     }
 
-    void OnBuyWing()
+    void OnBuyStability()
     {
-        int lvl  = GameData.WingLevel;
-        int cost = UpgradeData.WingCost(lvl);
-        if (lvl < UpgradeData.MaxLevel && GameData.Coins >= cost)
-            { GameData.Coins -= cost; GameData.WingLevel++; GameData.Save(); }
+        int lvl  = GameData.StabilityLevel;
+        int cost = UpgradeData.StabilityCost(lvl);
+        if (lvl < UpgradeData.MaxStabilityLevel && GameData.Coins >= cost)
+        {
+            GameData.Coins -= cost;
+            GameData.StabilityLevel++;
+            GameData.Save();
+        }
         RefreshCards();
     }
 
@@ -331,8 +339,8 @@ public class GameHUD : MonoBehaviour
     {
         UpdateTopBar();
         _warheadCard?.Refresh();
-        _fuelCard?.Refresh();
-        _wingCard?.Refresh();
+        _hullCard?.Refresh();
+        _stabilityCard?.Refresh();
     }
 }
 
@@ -360,7 +368,6 @@ class UpgradeCardUI
         _buyButtonVis   = card?.Q<VisualElement>("BuyButtonVis");
         _buyButtonLabel = _buyButtonVis?.Q<Label>("BuyButtonLabel");
 
-        // Tüm kart tıklanabilir
         card?.RegisterCallback<ClickEvent>(evt =>
         {
             evt.StopPropagation();
@@ -373,46 +380,65 @@ class UpgradeCardUI
     public void Refresh()
     {
         int    level;
+        int    maxLevel;
         int    cost;
         string statText;
+        string lockedText = null;
 
         switch (_type)
         {
             case "Warhead":
-                level    = GameData.WarheadLevel;
-                cost     = UpgradeData.WarheadCost(level);
-                statText = $"Patlama: {UpgradeData.WarheadRadius(level):F0}m -> {UpgradeData.WarheadRadius(level + 1):F0}m";
+                level   = GameData.WarheadLevel;
+                maxLevel = UpgradeData.MaxWarheadLevel;
+                int cap = GameData.MaxWarheadForHull;
+                cost    = UpgradeData.WarheadCost(level);
+                statText = $"Patlama: {UpgradeData.WarheadRadius(level):F0}m → {UpgradeData.WarheadRadius(level + 1):F0}m";
+                if (level >= cap && level < maxLevel)
+                    lockedText = $"Gövde yükselt! ({UpgradeData.HullNextName(GameData.HullLevel)})";
                 break;
-            case "Fuel":
-                level    = GameData.FuelLevel;
-                cost     = UpgradeData.FuelCost(level);
-                statText = $"Hiz: {UpgradeData.FuelSpeed(level):F0} -> {UpgradeData.FuelSpeed(level + 1):F0}";
+
+            case "Hull":
+                level    = GameData.HullLevel;
+                maxLevel = UpgradeData.MaxHullLevel;
+                cost     = UpgradeData.HullCost(level);
+                string nextHull = UpgradeData.HullNextName(level);
+                statText = $"{UpgradeData.HullName(level)} → {nextHull}  |  Hız: {UpgradeData.HullSpeed(level):F0}→{UpgradeData.HullSpeed(level + 1):F0}";
                 break;
-            case "Wing":
-                level    = GameData.WingLevel;
-                cost     = UpgradeData.WingCost(level);
-                statText = $"Manevra: {UpgradeData.WingTurnSpeed(level):F0} -> {UpgradeData.WingTurnSpeed(level + 1):F0}";
+
+            case "Stability":
+                level    = GameData.StabilityLevel;
+                maxLevel = UpgradeData.MaxStabilityLevel;
+                cost     = UpgradeData.StabilityCost(level);
+                statText = $"Stabilite: {UpgradeData.StabilityTurnSpeed(level):F0} → {UpgradeData.StabilityTurnSpeed(level + 1):F0}";
                 break;
+
             default: return;
         }
 
-        bool isMax = level >= UpgradeData.MaxLevel;
-        bool canBuy = !isMax && GameData.Coins >= cost;
+        bool isMax      = level >= maxLevel;
+        bool isLocked   = lockedText != null;
+        bool canBuy     = !isMax && !isLocked && GameData.Coins >= cost;
 
-        if (_levelLabel     != null) _levelLabel.text     = isMax ? "MAX"             : $"Seviye {level}";
-        if (_statLabel      != null) _statLabel.text      = isMax ? "Maksimum seviye" : statText;
-        if (_costLabel      != null) _costLabel.text      = isMax ? ""                : $"{cost} Coin";
-        if (_buyButtonLabel != null) _buyButtonLabel.text = isMax ? "MAX"             : "UPGRADE";
+        if (_levelLabel != null)
+            _levelLabel.text = isMax ? "MAX" : $"Seviye {level}";
 
-        // Kart opaklığı: satın alınamazsa soluk görün
+        if (_statLabel != null)
+            _statLabel.text = isMax    ? "Maksimum seviye"
+                            : isLocked ? lockedText
+                            : statText;
+
+        if (_costLabel != null)
+            _costLabel.text = (isMax || isLocked) ? "" : $"{cost} Coin";
+
+        if (_buyButtonLabel != null)
+            _buyButtonLabel.text = isMax    ? "MAX"
+                                 : isLocked ? "KİLİTLİ"
+                                 : "UPGRADE";
+
         if (_card != null)
             _card.style.opacity = canBuy || isMax ? 1f : 0.5f;
 
-        // Buton arkaplanı: karşılanamaz veya max ise soluklaş
         if (_buyButtonVis != null)
-        {
-            var col = _buyButtonVis.style.backgroundColor.value;
             _buyButtonVis.style.opacity = canBuy || isMax ? 1f : 0.4f;
-        }
     }
 }

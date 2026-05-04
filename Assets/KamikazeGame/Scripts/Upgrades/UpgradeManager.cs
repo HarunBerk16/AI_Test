@@ -2,44 +2,34 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 
-/// <summary>
-/// Upgrade sahnesinin kontrolcüsü.
-/// 3 upgrade kartı gösterir: Warhead, Yakıt, Kanat.
-/// Satın alma işlemlerini yönetir.
-/// </summary>
 public class UpgradeManager : MonoBehaviour
 {
-    private UIDocument _doc;
+    private UIDocument   _doc;
     private VisualElement _root;
-
-    // Coin label
-    private Label _coinLabel;
+    private Label         _coinLabel;
 
     void Start()
     {
-        _doc = GetComponent<UIDocument>();
+        _doc  = GetComponent<UIDocument>();
         _root = _doc.rootVisualElement;
 
         _coinLabel = _root.Q<Label>("CoinLabel");
 
-        SetupCard("Warhead", "WarheadCard");
-        SetupCard("Fuel",    "FuelCard");
-        SetupCard("Wing",    "WingCard");
+        SetupCard("Warhead",   "WarheadCard");
+        SetupCard("Hull",      "FuelCard");      // aynı kart adı, farklı tip
+        SetupCard("Stability", "WingCard");
 
         UpdateCoinLabel();
 
-        // Tekrar oyna (aynı level)
         Button playBtn = _root.Q<Button>("PlayButton");
         if (playBtn != null)
             playBtn.clicked += () => SceneManager.LoadScene("SampleScene");
 
-        // Sonraki level
         Button nextBtn = _root.Q<Button>("NextLevelButton");
         if (nextBtn != null)
         {
-            // Max level 2 ise gizle
             if (GameData.CurrentLevel >= 2)
-                nextBtn.style.display = UnityEngine.UIElements.DisplayStyle.None;
+                nextBtn.style.display = DisplayStyle.None;
             else
                 nextBtn.clicked += () =>
                 {
@@ -55,9 +45,9 @@ public class UpgradeManager : MonoBehaviour
         VisualElement card = _root.Q<VisualElement>(cardName);
         if (card == null) return;
 
-        Label levelLabel  = card.Q<Label>("LevelLabel");
-        Label statLabel   = card.Q<Label>("StatLabel");
-        Label costLabel   = card.Q<Label>("CostLabel");
+        Label  levelLabel = card.Q<Label>("LevelLabel");
+        Label  statLabel  = card.Q<Label>("StatLabel");
+        Label  costLabel  = card.Q<Label>("CostLabel");
         Button buyBtn     = card.Q<Button>("BuyButton");
 
         RefreshCard(upgradeType, levelLabel, statLabel, costLabel, buyBtn);
@@ -73,67 +63,86 @@ public class UpgradeManager : MonoBehaviour
 
     void RefreshCard(string type, Label levelLabel, Label statLabel, Label costLabel, Button buyBtn)
     {
-        int level;
-        int cost;
+        int    level;
+        int    maxLevel;
+        int    cost;
         string statText;
+        string lockedText = null;
 
         switch (type)
         {
             case "Warhead":
                 level    = GameData.WarheadLevel;
+                maxLevel = UpgradeData.MaxWarheadLevel;
+                int cap  = GameData.MaxWarheadForHull;
                 cost     = UpgradeData.WarheadCost(level);
                 statText = $"Patlama: {UpgradeData.WarheadRadius(level):F0}m → {UpgradeData.WarheadRadius(level + 1):F0}m";
+                if (level >= cap && level < maxLevel)
+                    lockedText = $"Gövde yükselt!";
                 break;
-            case "Fuel":
-                level    = GameData.FuelLevel;
-                cost     = UpgradeData.FuelCost(level);
-                statText = $"Hız: {UpgradeData.FuelSpeed(level):F0} → {UpgradeData.FuelSpeed(level + 1):F0}";
+
+            case "Hull":
+                level    = GameData.HullLevel;
+                maxLevel = UpgradeData.MaxHullLevel;
+                cost     = UpgradeData.HullCost(level);
+                statText = $"{UpgradeData.HullName(level)} → {UpgradeData.HullNextName(level)}  |  Hız +{UpgradeData.HullSpeed(level + 1) - UpgradeData.HullSpeed(level):F0}";
                 break;
-            case "Wing":
-                level    = GameData.WingLevel;
-                cost     = UpgradeData.WingCost(level);
-                statText = $"Manevra: {UpgradeData.WingTurnSpeed(level):F0} → {UpgradeData.WingTurnSpeed(level + 1):F0}";
+
+            case "Stability":
+                level    = GameData.StabilityLevel;
+                maxLevel = UpgradeData.MaxStabilityLevel;
+                cost     = UpgradeData.StabilityCost(level);
+                statText = $"Stabilite: {UpgradeData.StabilityTurnSpeed(level):F0} → {UpgradeData.StabilityTurnSpeed(level + 1):F0}";
                 break;
+
             default: return;
         }
 
-        bool isMax = level >= UpgradeData.MaxLevel;
+        bool isMax    = level >= maxLevel;
+        bool isLocked = lockedText != null;
 
         if (levelLabel != null) levelLabel.text = isMax ? "MAX" : $"Seviye {level}";
-        if (statLabel  != null) statLabel.text  = isMax ? "Maksimum seviyeye ulaşıldı" : statText;
-        if (costLabel  != null) costLabel.text  = isMax ? "" : $"{cost} Coin";
+        if (statLabel  != null) statLabel.text  = isMax    ? "Maksimum seviyeye ulaşıldı"
+                                                : isLocked ? lockedText
+                                                : statText;
+        if (costLabel  != null) costLabel.text  = (isMax || isLocked) ? "" : $"{cost} Coin";
 
         if (buyBtn != null)
         {
-            buyBtn.SetEnabled(!isMax && GameData.Coins >= cost);
-            buyBtn.text = isMax ? "MAX" : "UPGRADE";
+            buyBtn.SetEnabled(!isMax && !isLocked && GameData.Coins >= cost);
+            buyBtn.text = isMax ? "MAX" : isLocked ? "KİLİTLİ" : "UPGRADE";
         }
     }
 
     void TryBuy(string type)
     {
-        int level, cost;
-
         switch (type)
         {
             case "Warhead":
-                level = GameData.WarheadLevel;
-                cost  = UpgradeData.WarheadCost(level);
-                if (level < UpgradeData.MaxLevel && GameData.Coins >= cost)
+            {
+                int lvl  = GameData.WarheadLevel;
+                int cap  = GameData.MaxWarheadForHull;
+                int cost = UpgradeData.WarheadCost(lvl);
+                if (lvl < cap && lvl < UpgradeData.MaxWarheadLevel && GameData.Coins >= cost)
                 { GameData.Coins -= cost; GameData.WarheadLevel++; }
                 break;
-            case "Fuel":
-                level = GameData.FuelLevel;
-                cost  = UpgradeData.FuelCost(level);
-                if (level < UpgradeData.MaxLevel && GameData.Coins >= cost)
-                { GameData.Coins -= cost; GameData.FuelLevel++; }
+            }
+            case "Hull":
+            {
+                int lvl  = GameData.HullLevel;
+                int cost = UpgradeData.HullCost(lvl);
+                if (lvl < UpgradeData.MaxHullLevel && GameData.Coins >= cost)
+                { GameData.Coins -= cost; GameData.HullLevel++; }
                 break;
-            case "Wing":
-                level = GameData.WingLevel;
-                cost  = UpgradeData.WingCost(level);
-                if (level < UpgradeData.MaxLevel && GameData.Coins >= cost)
-                { GameData.Coins -= cost; GameData.WingLevel++; }
+            }
+            case "Stability":
+            {
+                int lvl  = GameData.StabilityLevel;
+                int cost = UpgradeData.StabilityCost(lvl);
+                if (lvl < UpgradeData.MaxStabilityLevel && GameData.Coins >= cost)
+                { GameData.Coins -= cost; GameData.StabilityLevel++; }
                 break;
+            }
         }
 
         GameData.Save();

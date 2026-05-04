@@ -1,9 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Tüm oyun verilerini tutan merkezi veri sınıfı.
-/// PlayerPrefs ile kaydedilir.
-/// </summary>
 public static class GameData
 {
     public static int Coins
@@ -24,24 +20,32 @@ public static class GameData
         set => PlayerPrefs.SetInt("WarheadLevel", value);
     }
 
-    public static int WingLevel
+    // Gövde tipi: 0=Küçük Uçak, 1=Boru Gövde, 2=Shahed
+    public static int HullLevel
     {
-        get => PlayerPrefs.GetInt("WingLevel", 0);
-        set => PlayerPrefs.SetInt("WingLevel", value);
+        get => PlayerPrefs.GetInt("HullLevel", 0);
+        set => PlayerPrefs.SetInt("HullLevel", value);
     }
 
-    public static int FuelLevel
+    // Stabilite (eski Kanat): manevra kabiliyeti
+    public static int StabilityLevel
     {
-        get => PlayerPrefs.GetInt("FuelLevel", 0);
-        set => PlayerPrefs.SetInt("FuelLevel", value);
+        get => PlayerPrefs.GetInt("StabilityLevel", 0);
+        set => PlayerPrefs.SetInt("StabilityLevel", value);
     }
 
-    // Başlangıçta 2.5m yarıçap → 7 katlı binada kısmi hasar mümkün.
-    // Max (level 5): 12.5m → tüm binayı kapsar.
+    // Hull'a göre azami warhead seviyesi: küçük→2, tüp→4, shahed→5
+    public static int MaxWarheadForHull => HullLevel switch
+    {
+        0 => 2,
+        1 => 4,
+        _ => UpgradeData.MaxWarheadLevel
+    };
+
     public static float ExplosionRadius => 2.5f + WarheadLevel * 2f;
     public static float BlastForce      => 50f  + WarheadLevel * 80f;
-    public static float PlaneSpeed      => 20f  + FuelLevel    * 5f;
-    public static float WingScale       => 1f   + WingLevel    * 0.3f;
+    public static float PlaneSpeed      => UpgradeData.HullSpeed(HullLevel);
+    public static float StabilityScale  => 1f   + StabilityLevel * 0.3f;
 
     public static void Save() => PlayerPrefs.Save();
 }

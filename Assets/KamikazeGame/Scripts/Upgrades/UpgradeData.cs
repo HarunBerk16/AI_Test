@@ -1,29 +1,39 @@
 using UnityEngine;
 
-/// <summary>
-/// Her upgrade türünün fiyat/seviye tablosu.
-/// Seviye arttıkça fiyat üstel büyür.
-/// </summary>
 public static class UpgradeData
 {
-    public const int MaxLevel = 5;
+    public const int MaxWarheadLevel   = 5;
+    public const int MaxHullLevel      = 2; // 3 gövde tipi: 0, 1, 2
+    public const int MaxStabilityLevel = 5;
 
-    // Fiyat hesabı: baseCost * (multiplier ^ level)
-    public static int GetCost(int currentLevel, int baseCost, float multiplier = 1.8f)
+    static int GetCost(int currentLevel, int maxLevel, int baseCost, float multiplier = 1.8f)
     {
-        if (currentLevel >= MaxLevel) return -1; // Max seviye
+        if (currentLevel >= maxLevel) return -1;
         return Mathf.RoundToInt(baseCost * Mathf.Pow(multiplier, currentLevel));
     }
 
-    // Warhead: patlama yarıçapı
-    public static int WarheadCost(int level)  => GetCost(level, baseCost: 50);
+    // ── Warhead ─────────────────────────────────────────
+    public static int   WarheadCost(int level)   => GetCost(level, MaxWarheadLevel, 50);
     public static float WarheadRadius(int level) => 2.5f + level * 2f;
 
-    // Yakıt: hız
-    public static int FuelCost(int level)     => GetCost(level, baseCost: 40);
-    public static float FuelSpeed(int level)  => 20f + level * 5f;
+    // ── Gövde (Hull) ─────────────────────────────────────
+    // Sadece 2 yükseltme: Küçük→Boru→Shahed
+    public static int   HullCost(int level)  => GetCost(level, MaxHullLevel, 150);
+    public static float HullSpeed(int level) => level switch { 0 => 22f, 1 => 32f, _ => 44f };
+    public static string HullName(int level) => level switch
+    {
+        0 => "Küçük Uçak",
+        1 => "Boru Gövde",
+        _ => "Shahed"
+    };
+    public static string HullNextName(int level) => level switch
+    {
+        0 => "Boru Gövde",
+        1 => "Shahed",
+        _ => "—"
+    };
 
-    // Kanat: manevra kabiliyeti (turnSpeed)
-    public static int WingCost(int level)     => GetCost(level, baseCost: 35);
-    public static float WingTurnSpeed(int level) => 80f + level * 20f;
+    // ── Stabilite (eski Kanat) ───────────────────────────
+    public static int   StabilityCost(int level)      => GetCost(level, MaxStabilityLevel, 35);
+    public static float StabilityTurnSpeed(int level) => 80f + level * 20f;
 }

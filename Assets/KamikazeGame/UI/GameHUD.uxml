@@ -70,7 +70,7 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
 
-                <!-- YAKIT -->
+                <!-- GÖVDE -->
                 <ui:VisualElement name="FuelCard" style="
                     flex: 1; margin: 0 4px;
                     background-color: rgba(30,100,180,0.20);
@@ -79,7 +79,7 @@
                     align-items: center;
                 ">
                     <ui:Label text="&#x26A1;" style="font-size: 30px; margin-bottom: 3px;"/>
-                    <ui:Label text="YAKIT" style="font-size: 14px; color: rgb(100,180,255); -unity-font-style: bold; margin-bottom: 2px; -unity-text-align: upper-center;"/>
+                    <ui:Label text="GÖVDE" style="font-size: 14px; color: rgb(100,180,255); -unity-font-style: bold; margin-bottom: 2px; -unity-text-align: upper-center;"/>
                     <ui:Label name="LevelLabel" text="Seviye 0" style="font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 3px;"/>
                     <ui:Label name="StatLabel" text="" style="font-size: 11px; color: rgba(200,200,220,0.65); margin-bottom: 4px; white-space: normal; -unity-text-align: upper-center; flex-grow: 1;"/>
                     <ui:Label name="CostLabel" text="" style="font-size: 15px; color: rgb(255,220,50); -unity-font-style: bold; margin-bottom: 0;"/>
@@ -92,7 +92,7 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
 
-                <!-- KANAT -->
+                <!-- STABİLİTE -->
                 <ui:VisualElement name="WingCard" style="
                     flex: 1; margin: 0 4px;
                     background-color: rgba(30,160,80,0.20);
@@ -101,7 +101,7 @@
                     align-items: center;
                 ">
                     <ui:Label text="&#x2708;" style="font-size: 30px; margin-bottom: 3px;"/>
-                    <ui:Label text="KANAT" style="font-size: 14px; color: rgb(80,230,130); -unity-font-style: bold; margin-bottom: 2px; -unity-text-align: upper-center;"/>
+                    <ui:Label text="STABİLİTE" style="font-size: 14px; color: rgb(80,230,130); -unity-font-style: bold; margin-bottom: 2px; -unity-text-align: upper-center;"/>
                     <ui:Label name="LevelLabel" text="Seviye 0" style="font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 3px;"/>
                     <ui:Label name="StatLabel" text="" style="font-size: 11px; color: rgba(200,200,220,0.65); margin-bottom: 4px; white-space: normal; -unity-text-align: upper-center; flex-grow: 1;"/>
                     <ui:Label name="CostLabel" text="" style="font-size: 15px; color: rgb(255,220,50); -unity-font-style: bold; margin-bottom: 0;"/>
