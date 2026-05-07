@@ -67,6 +67,17 @@ public class PlaneImpact : MonoBehaviour
             _controller.StopFlying();
             BreakApart();
             GameEvents.OnPlaneImpact?.Invoke(transform.position);
+            return;
+        }
+
+        var obstacle = other.GetComponentInParent<EnvironmentObstacle>();
+        if (obstacle != null)
+        {
+            _hasImpacted = true;
+            _controller.StopFlying();
+            BreakApart();
+            obstacle.GetHit(transform.forward);
+            GameEvents.OnPlaneCrash?.Invoke();
         }
     }
 

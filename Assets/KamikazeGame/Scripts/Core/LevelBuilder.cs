@@ -42,7 +42,7 @@ public class LevelBuilder : MonoBehaviour
     // Sol ve sağ gözetleme kulesi, aralarında duvarlı kapı.
     void BuildLevel1()
     {
-        var root = CreateCompound(new Vector3(0, 0, 44), "Karakol", 150);
+        var root = CreateCompound(new Vector3(0, 0, 250), "Karakol", 150);
         var t    = root.transform;
 
         // Sol kule
@@ -67,7 +67,7 @@ public class LevelBuilder : MonoBehaviour
     // Merkez depo + iki yan kule + köprüler + arka ek.
     void BuildLevel2()
     {
-        var root = CreateCompound(new Vector3(0, 0, 58), "Depo Kompleksi", 320);
+        var root = CreateCompound(new Vector3(0, 0, 380), "Depo Kompleksi", 320);
         var t    = root.transform;
 
         // Ana depo (geniş 3 kat)
@@ -95,7 +95,7 @@ public class LevelBuilder : MonoBehaviour
     // 4 köşe kulesi + bağlantı duvarları + kapı kemeri + merkez kule.
     void BuildLevel3()
     {
-        var root = CreateCompound(new Vector3(0, 0, 72), "Kale", 560);
+        var root = CreateCompound(new Vector3(0, 0, 520), "Kale", 560);
         var t    = root.transform;
 
         // 4 köşe kulesi
@@ -131,7 +131,7 @@ public class LevelBuilder : MonoBehaviour
     // Fabrikalar + bacalar + yüksek platform + radar kulesi.
     void BuildLevel4()
     {
-        var root = CreateCompound(new Vector3(0, 0, 88), "Endüstriyel Kompleks", 920);
+        var root = CreateCompound(new Vector3(0, 0, 680), "Endüstriyel Kompleks", 920);
         var t    = root.transform;
 
         // Sol fabrika
