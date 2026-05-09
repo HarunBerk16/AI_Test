@@ -1,46 +1,47 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <ui:VisualElement name="Root" style="
         width: 100%; height: 100%;
-        background-color: rgb(15,15,25);
+        background-color: rgb(230,245,255);
         align-items: center;
         justify-content: center;
     ">
-        <!-- Logo / Başlık -->
-        <ui:VisualElement name="TitleBlock" style="align-items: center; margin-bottom: 60px;">
-            <ui:Label text="KAMIKAZE" style="
-                font-size: 72px; color: rgb(255,80,40);
-                -unity-font-style: bold;
-            "/>
-            <ui:Label text="EVOLUTION" style="
-                font-size: 36px; color: rgb(255,200,50);
-                -unity-font-style: bold; margin-top: -10px;
-            "/>
-            <ui:Label text="Her run'da daha güçlü ol" style="
-                font-size: 18px; color: rgb(150,150,170); margin-top: 10px;
-            "/>
+        <!-- LOGO -->
+        <ui:VisualElement name="TitleBlock" style="align-items: center; margin-bottom: 48px;">
+            <ui:Label text="&#x2708;" style="font-size: 62px; margin-bottom: 4px; color: rgb(220,60,30);"/>
+            <ui:Label text="KAMIKAZE" style="font-size: 66px; color: rgb(220,58,28); -unity-font-style: bold; letter-spacing: -1px;"/>
+            <ui:Label text="EVOLUTION" style="font-size: 26px; color: rgb(245,160,0); -unity-font-style: bold; letter-spacing: 6px; margin-top: -10px;"/>
+            <ui:VisualElement style="width: 80px; height: 2px; border-radius: 1px; background-color: rgba(0,0,0,0.10); margin-top: 16px; margin-bottom: 10px;"/>
+            <ui:Label text="Her run'da daha güçlü ol" style="font-size: 14px; color: rgba(70,62,100,0.55); letter-spacing: 1px;"/>
         </ui:VisualElement>
 
-        <!-- Coin göstergesi -->
-        <ui:Label name="CoinLabel" text="Coin: 0" style="
-            font-size: 24px; color: rgb(255,220,50);
-            background-color: rgba(255,255,255,0.08);
-            padding: 8px 24px; border-radius: 12px;
-            margin-bottom: 50px;
-        "/>
+        <!-- COIN BADGE -->
+        <ui:VisualElement style="
+            flex-direction: row; align-items: center;
+            background-color: rgb(255,192,12);
+            border-color: rgba(255,235,100,0.70); border-width: 2px;
+            border-radius: 28px; padding: 12px 30px; margin-bottom: 44px;
+        ">
+            <ui:Label text="●" style="font-size: 15px; color: rgba(100,62,0,0.70); margin-right: 10px;"/>
+            <ui:Label name="CoinLabel" text="0" style="font-size: 22px; color: rgb(75,48,0); -unity-font-style: bold;"/>
+            <ui:Label text=" COIN" style="font-size: 13px; color: rgba(95,60,0,0.60); -unity-font-style: bold; letter-spacing: 2px; margin-left: 4px;"/>
+        </ui:VisualElement>
 
-        <!-- Butonlar -->
+        <!-- PLAY BUTTON -->
         <ui:Button name="PlayButton" text="SALDIRI BAŞLAT" style="
-            font-size: 34px; padding: 20px 70px;
-            background-color: rgb(220,60,30); color: white;
-            border-radius: 16px; border-width: 0;
-            -unity-font-style: bold; margin-bottom: 20px;
+            font-size: 24px; width: 80%; height: 72px;
+            background-color: rgb(218,68,30); color: white;
+            border-color: rgba(255,140,90,0.75); border-width: 2.5px;
+            border-radius: 22px; -unity-font-style: bold;
+            margin-bottom: 16px; letter-spacing: 1px;
         "/>
 
+        <!-- UPGRADE BUTTON -->
         <ui:Button name="UpgradeButton" text="UPGRADE" style="
-            font-size: 24px; padding: 14px 50px;
-            background-color: rgb(40,100,180); color: white;
-            border-radius: 14px; border-width: 0;
-            -unity-font-style: bold;
+            font-size: 18px; width: 80%; height: 56px;
+            background-color: rgb(32,148,210); color: white;
+            border-color: rgba(100,200,255,0.75); border-width: 2.5px;
+            border-radius: 18px; -unity-font-style: bold;
+            letter-spacing: 3px;
         "/>
 
     </ui:VisualElement>

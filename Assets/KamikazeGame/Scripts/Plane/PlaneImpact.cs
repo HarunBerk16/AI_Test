@@ -96,13 +96,57 @@ public class PlaneImpact : MonoBehaviour
         if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
         rb.isKinematic            = false;
         rb.useGravity             = true;
+        rb.linearDamping          = 1.5f;   // hızlı yavaşlama → sürüklenme etkisi
+        rb.angularDamping         = 8f;     // takla atmaması için yüksek rotasyon sönümü
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-        rb.AddForce(transform.forward * 3f - Vector3.up * 2f, ForceMode.Impulse);
-        rb.AddTorque(transform.right * 5f + Random.insideUnitSphere * 2f, ForceMode.Impulse);
+
+        // Sadece ileri + hafif aşağı itki — takla yok
+        Vector3 slideDir = Vector3.Lerp(transform.forward, Vector3.forward, 0.5f);
+        rb.AddForce(slideDir * 4f - Vector3.up * 1.5f, ForceMode.Impulse);
+        // Minimal spin — doğal görünsün ama gerçek dışı olmasın
+        rb.AddTorque(Random.insideUnitSphere * 0.8f, ForceMode.Impulse);
+
+        // Yerden geçmemesi için pozisyon düzeltici başlat
+        _groundClampActive = true;
 
         SeparatePiece("WingLeft");
         SeparatePiece("WingRight");
         SeparatePiece("Tail");
+    }
+
+    bool _groundClampActive;
+    const float GROUND_Y = 0.3f;
+
+    void LateUpdate()
+    {
+        if (!_groundClampActive) return;
+        var rb = GetComponent<Rigidbody>();
+        if (rb == null || rb.isKinematic) { _groundClampActive = false; return; }
+
+        // Yerden aşağı gitmeyi engelle
+        if (transform.position.y < GROUND_Y)
+        {
+            var pos = transform.position;
+            pos.y = GROUND_Y;
+            transform.position = pos;
+
+            // Dikey hızı kes, yatay hızı sürtünmeyle azalt
+            var vel = rb.linearVelocity;
+            vel.y = Mathf.Max(vel.y, 0f);
+            vel.x *= 0.85f;
+            vel.z *= 0.85f;
+            rb.linearVelocity = vel;
+
+            // Rotasyonu ground'a yakın sabit tut (devrilmesin)
+            var euler = transform.eulerAngles;
+            euler.x = Mathf.LerpAngle(euler.x, 0f, 0.15f);
+            euler.z = Mathf.LerpAngle(euler.z, 0f, 0.15f);
+            transform.eulerAngles = euler;
+        }
+
+        // Durunca temizle
+        if (rb.linearVelocity.magnitude < 0.05f && rb.angularVelocity.magnitude < 0.05f)
+            _groundClampActive = false;
     }
 
     void SeparatePiece(string pieceName)

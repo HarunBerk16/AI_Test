@@ -11,7 +11,7 @@ public class MainMenuController : MonoBehaviour
         // Coin göster
         Label coinLabel = root.Q<Label>("CoinLabel");
         if (coinLabel != null)
-            coinLabel.text = $"Coin: {GameData.Coins}";
+            coinLabel.text = $"{GameData.Coins}";
 
         // Saldırı başlat
         Button playBtn = root.Q<Button>("PlayButton");

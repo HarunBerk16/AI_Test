@@ -174,7 +174,7 @@ public class GameHUD : MonoBehaviour
     void UpdateTopBar()
     {
         if (_levelLabel != null) _levelLabel.text = $"LEVEL {GameData.CurrentLevel}";
-        if (_coinLabel  != null) _coinLabel.text  = $"Coin: {GameData.Coins}";
+        if (_coinLabel  != null) _coinLabel.text  = $"{GameData.Coins}";
     }
 
     // ──────────── Sonuç ────────────
@@ -208,8 +208,8 @@ public class GameHUD : MonoBehaviour
         {
             _resultCoin.text = $"+{earned} Coin";
             _resultCoin.style.color = new StyleColor(earned > 0
-                ? new Color(0.4f, 1f, 0.4f)
-                : new Color(1f, 0.4f, 0.4f));
+                ? new Color(0.11f, 0.56f, 0.24f)
+                : new Color(0.78f, 0.22f, 0.14f));
         }
 
         if (_resultBarFill != null)
@@ -356,6 +356,7 @@ class UpgradeCardUI
     private readonly VisualElement _buyButtonVis;
     private readonly string        _type;
     private readonly Action        _onBuy;
+    private bool                   _flashing;
 
     public UpgradeCardUI(VisualElement card, string type, Action onBuy)
     {
@@ -371,10 +372,55 @@ class UpgradeCardUI
         card?.RegisterCallback<ClickEvent>(evt =>
         {
             evt.StopPropagation();
-            _onBuy?.Invoke();
+            HandleClick();
         });
 
         Refresh();
+    }
+
+    void HandleClick()
+    {
+        int  level, maxLevel, cost;
+        bool isLocked = false;
+
+        switch (_type)
+        {
+            case "Warhead":
+                level    = GameData.WarheadLevel;
+                maxLevel = UpgradeData.MaxWarheadLevel;
+                cost     = UpgradeData.WarheadCost(level);
+                isLocked = level >= GameData.MaxWarheadForHull && level < maxLevel;
+                break;
+            case "Hull":
+                level    = GameData.HullLevel;
+                maxLevel = UpgradeData.MaxHullLevel;
+                cost     = UpgradeData.HullCost(level);
+                break;
+            case "Stability":
+                level    = GameData.StabilityLevel;
+                maxLevel = UpgradeData.MaxStabilityLevel;
+                cost     = UpgradeData.StabilityCost(level);
+                break;
+            default: return;
+        }
+
+        if (level >= maxLevel || isLocked) return;
+
+        if (GameData.Coins < cost) { FlashInsufficient(); return; }
+
+        _onBuy?.Invoke();
+    }
+
+    void FlashInsufficient()
+    {
+        if (_buyButtonLabel == null || _flashing) return;
+        _flashing = true;
+        _buyButtonLabel.text = "YETERSİZ COIN";
+        _buyButtonLabel.schedule.Execute(() =>
+        {
+            _buyButtonLabel.text = "UPGRADE";
+            _flashing = false;
+        }).StartingIn(1300);
     }
 
     public void Refresh()
@@ -388,10 +434,10 @@ class UpgradeCardUI
         switch (_type)
         {
             case "Warhead":
-                level   = GameData.WarheadLevel;
+                level    = GameData.WarheadLevel;
                 maxLevel = UpgradeData.MaxWarheadLevel;
-                int cap = GameData.MaxWarheadForHull;
-                cost    = UpgradeData.WarheadCost(level);
+                int cap  = GameData.MaxWarheadForHull;
+                cost     = UpgradeData.WarheadCost(level);
                 statText = $"Patlama: {UpgradeData.WarheadRadius(level):F0}m → {UpgradeData.WarheadRadius(level + 1):F0}m";
                 if (level >= cap && level < maxLevel)
                     lockedText = $"Gövde yükselt! ({UpgradeData.HullNextName(GameData.HullLevel)})";
@@ -415,12 +461,11 @@ class UpgradeCardUI
             default: return;
         }
 
-        bool isMax      = level >= maxLevel;
-        bool isLocked   = lockedText != null;
-        bool canBuy     = !isMax && !isLocked && GameData.Coins >= cost;
+        bool isMax    = level >= maxLevel;
+        bool isLocked = lockedText != null;
 
         if (_levelLabel != null)
-            _levelLabel.text = isMax ? "MAX" : $"Seviye {level}";
+            _levelLabel.text = isMax ? "MAX" : $"Lv {level}";
 
         if (_statLabel != null)
             _statLabel.text = isMax    ? "Maksimum seviye"
@@ -430,15 +475,9 @@ class UpgradeCardUI
         if (_costLabel != null)
             _costLabel.text = (isMax || isLocked) ? "" : $"{cost} Coin";
 
-        if (_buyButtonLabel != null)
+        if (_buyButtonLabel != null && !_flashing)
             _buyButtonLabel.text = isMax    ? "MAX"
                                  : isLocked ? "KİLİTLİ"
                                  : "UPGRADE";
-
-        if (_card != null)
-            _card.style.opacity = canBuy || isMax ? 1f : 0.5f;
-
-        if (_buyButtonVis != null)
-            _buyButtonVis.style.opacity = canBuy || isMax ? 1f : 0.4f;
     }
 }
